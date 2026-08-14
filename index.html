@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ドラム ボイスアプリ</title>
+  <style>
+    :root {
+      --bg-color: #0f172a;
+      --card-bg: #1e293b;
+      --card-border: #334155;
+      --card-hover: #475569;
+      --accent-color: #6366f1;
+      --accent-glow: rgba(99, 102, 241, 0.4);
+      --text-main: #f8fafc;
+      --text-sub: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 800px;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    header {
+      text-align: center;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, #a5b4fc 0%, #6366f1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    header p {
+      color: var(--text-sub);
+      font-size: 0.95rem;
+    }
+
+    .button-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1rem;
+    }
+
+    .voice-btn {
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 1.25rem 1rem;
+      color: var(--text-main);
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      word-break: break-word;
+      user-select: none;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+    }
+
+    .voice-btn:hover {
+      background-color: var(--card-hover);
+      border-color: #64748b;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 12px -2px rgba(0, 0, 0, 0.3);
+    }
+
+    .voice-btn:active {
+      transform: translateY(0);
+    }
+
+    /* 音声再生中のスタイリング */
+    .voice-btn.playing {
+      background-color: #312e81;
+      border-color: var(--accent-color);
+      box-shadow: 0 0 15px var(--accent-glow);
+      animation: pulse 1.5s infinite alternate;
+    }
+
+    @keyframes pulse {
+      0% {
+        box-shadow: 0 0 8px var(--accent-glow);
+      }
+      100% {
+        box-shadow: 0 0 20px var(--accent-glow);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <h1>ドラム ボイスアプリ</h1>
+      <p>タップするとボイスが再生されます</p>
+    </header>
+
+    <div class="button-grid" id="buttonContainer"></div>
+  </div>
+
+  <script>
+    // 再生対象の音声ファイルリスト
+    const audioFiles = [
+      "あなた一番優秀ね.mp3",
+      "また合えてめちゃうれしい.mp3",
+      "薫さん好き.mp3",
+      "薫先生どうして泣いているの.mp3",
+      "私はドラムです.mp3",
+      "超おいしい.mp3",
+      "超キケン.mp3",
+      "超たのしみ.mp3",
+      "野崎さんガソリン.mp3",
+      "了解したよ野崎さん.mp3"
+    ];
+
+    const container = document.getElementById('buttonContainer');
+    let currentAudio = null;
+    let currentButton = null;
+
+    // ボタンの動的生成
+    audioFiles.forEach(file => {
+      // 拡張子 .mp3 を除いたタイトルを取得
+      const title = file.replace(/\.mp3$/i, '');
+
+      // ボタン要素作成
+      const button = document.createElement('button');
+      button.className = 'voice-btn';
+      button.textContent = title;
+
+      // クリック時の再生処理
+      button.addEventListener('click', () => {
+        // 他の音声が再生中なら停止して状態リセット
+        if (currentAudio) {
+          currentAudio.pause();
+          currentAudio.currentTime = 0;
+          if (currentButton) {
+            currentButton.classList.remove('playing');
+          }
+        }
+
+        // 新しい音声を生成して再生
+        const audio = new Audio(encodeURIComponent(file));
+        currentAudio = audio;
+        currentButton = button;
+
+        button.classList.add('playing');
+
+        audio.play().catch(err => {
+          console.error("音声の再生に失敗しました:", err);
+          button.classList.remove('playing');
+        });
+
+        // 再生終了時にボタンの発光を解除
+        audio.addEventListener('ended', () => {
+          button.classList.remove('playing');
+          currentAudio = null;
+          currentButton = null;
+        });
+      });
+
+      container.appendChild(button);
+    });
+  </script>
+</body>
+</html>
